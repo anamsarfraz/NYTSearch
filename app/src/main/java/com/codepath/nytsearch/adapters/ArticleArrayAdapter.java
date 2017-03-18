@@ -19,13 +19,6 @@ import com.codepath.nytsearch.models.ArticleImage;
 
 import java.util.List;
 
-import static android.R.attr.resource;
-import static com.bumptech.glide.Glide.with;
-
-/**
- * Created by usarfraz on 3/17/17.
- */
-
 public class ArticleArrayAdapter extends ArrayAdapter<Article> {
 
     public ArticleArrayAdapter(Context context, List<Article> articles) {

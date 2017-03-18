@@ -16,6 +16,8 @@ import android.widget.Button;
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.models.Article;
 
+import org.parceler.Parcels;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -33,7 +35,7 @@ public class ArticleActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
-        article = getIntent().getParcelableExtra("article");
+        article = (Article) Parcels.unwrap(getIntent().getParcelableExtra("article"));
 
         Log.d("ArticleActivity", article.getWebUrl());
 

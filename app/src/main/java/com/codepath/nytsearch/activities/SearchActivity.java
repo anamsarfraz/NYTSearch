@@ -23,6 +23,8 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +68,7 @@ public class SearchActivity extends AppCompatActivity {
                 Log.d("SearchActivity", "Coming here");
                 Article article = articleArrayAdapter.getItem(position);
                 // pass in that article into intent
-                intent.putExtra("article", article);
+                intent.putExtra("article", Parcels.wrap(article));
                 // launch the activity
                 startActivity(intent);
             }
