@@ -1,10 +1,16 @@
 package com.codepath.nytsearch.activities;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -90,16 +96,34 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
 
        articleAdapter.setOnItemClickListener((view, position) -> {
-            // create an intent to display the article
-            Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
-            // get the article to display
-            Log.d("SearchActivity", "Coming here");
-            Article article = articleAdapter.getItem(position);
-            // pass in that article into intent
-            intent.putExtra("article", Parcels.wrap(article));
-            // launch the activity
-            startActivity(intent);
-        });
+           CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+           // set toolbar color
+           builder.setToolbarColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark));
+           builder.addDefaultShareMenuItem();
+           Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_share);
+
+           String url = articleAdapter.getItem(position).getWebUrl();
+           Intent intent = new Intent(Intent.ACTION_SEND);
+           intent.setType("text/plain");
+           intent.putExtra(Intent.EXTRA_TEXT, url);
+
+           int requestCode = 100;
+
+           PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                   requestCode,
+                   intent,
+                   PendingIntent.FLAG_UPDATE_CURRENT);
+
+           // Map the bitmap, text, and pending intent to this icon
+           // Set tint to be true so it matches the toolbar color
+           builder.setActionButton(bitmap, "Share Link", pendingIntent, true);
+
+           CustomTabsIntent customTabsIntent = builder.build();
+
+           customTabsIntent.launchUrl(this, Uri.parse(url));
+
+
+       });
 
         // Retain an instance so that you can call `resetState()` for fresh searches
         scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
