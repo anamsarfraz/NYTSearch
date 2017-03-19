@@ -1,6 +1,9 @@
 package com.codepath.nytsearch.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -9,16 +12,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.adapters.ArticleArrayAdapter;
+import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
-import com.codepath.nytsearch.network.NYTSearchService;
+import com.codepath.nytsearch.util.Constants;
+import com.codepath.nytsearch.util.NYTSearchService;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,7 +42,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements SettingsFragment.OnFilterSettingsChangedListener {
     @BindView(R.id.etQuery)EditText etQuery;
     @BindView(R.id.btnSearch)Button btnSeach;
     @BindView(R.id.gvResults)GridView gvResults;
@@ -47,12 +51,22 @@ public class SearchActivity extends AppCompatActivity {
     List<Article> articles;
     ArticleArrayAdapter articleArrayAdapter;
 
+
+    String filteredQuery;
+    String sortOrder;
+    String beginDate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+
+
+        filteredQuery = null;
+        sortOrder = null;
+        beginDate = null;
 
         articles = new ArrayList<>();
         articleArrayAdapter = new ArticleArrayAdapter(this, articles);
@@ -89,8 +103,12 @@ public class SearchActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+
+        if (id == R.id.action_filter) {
+            FragmentManager fm = getSupportFragmentManager();
+            SettingsFragment settingsFragment = SettingsFragment.newInstance();
+            settingsFragment.show(fm, "fragment_settings");
+
             return true;
         }
 
@@ -98,7 +116,10 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
+        String searchQuery = etQuery.getText().toString();
+        if (searchQuery.isEmpty()) {
+            searchQuery = null;
+        }
 
 
 
@@ -124,7 +145,14 @@ public class SearchActivity extends AppCompatActivity {
 
         NYTSearchService service = retrofit.create(NYTSearchService.class);
 
-        Call<ArticleResponse> call = service.getArticles("7207142e827449f7af7b4525fd35c111");
+
+        Log.d("Search Activity", "Checkpoint");
+        Call<ArticleResponse> call = service.getArticles(
+                "7207142e827449f7af7b4525fd35c111",
+                searchQuery,
+                filteredQuery,
+                sortOrder,
+                beginDate);
         call.enqueue(new Callback<ArticleResponse>() {
 
             @Override
@@ -134,7 +162,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 articleArrayAdapter.addAll(articleResponse.getResponse().getArticles());
                 Log.d("ServiceAcivity", articles.get(0).getLeadParagraph());
-                Log.d("ServiceActivity", articles.get(0).getHeadline().getPrintHeadline());
+                //Log.d("ServiceActivity", articles.get(0).getHeadline().getPrintHeadline());
 
             }
 
@@ -146,6 +174,15 @@ public class SearchActivity extends AppCompatActivity {
             }
 
         });
+
+    }
+
+    @Override
+    public void onFilterSettingsChanged() {
+        SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+        filteredQuery = mSettings.getString(Constants.FILTERED_QUERY_STR, null);
+        sortOrder = mSettings.getString(Constants.SORT_STR, null);
+        beginDate = mSettings.getString(Constants.BEGIN_DATE_STR, null);
 
     }
 }
