@@ -8,13 +8,20 @@ import java.util.List;
 public class Articles {
 
 
+
+    ResponseMeta meta;
+
     @SerializedName("docs")
     List<Article> articles;
 
-    public List<Article> getArticles() {
-        return articles;
-    }
     public Articles() {
         articles = new ArrayList<>();
     }
+    public List<Article> getArticles() {
+        return articles;
+    }
+    public ResponseMeta getMeta() {
+        return meta;
+    }
+
 }

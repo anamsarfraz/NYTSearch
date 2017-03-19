@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +20,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 
 import com.codepath.nytsearch.R;
-import com.codepath.nytsearch.adapters.ArticleArrayAdapter;
+import com.codepath.nytsearch.adapters.ArticleAdapter;
 import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
@@ -44,13 +48,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SearchActivity extends AppCompatActivity implements SettingsFragment.OnFilterSettingsChangedListener {
     @BindView(R.id.etQuery)EditText etQuery;
     @BindView(R.id.btnSearch)Button btnSeach;
-    @BindView(R.id.gvResults)GridView gvResults;
+    @BindView(R.id.rvArticles)RecyclerView rvArticles;
     @BindView(R.id.toolbar) Toolbar toolbar;
 
-    List<Article> articles;
-    ArticleArrayAdapter articleArrayAdapter;
+    ArrayList<Article> articles;
+    ArticleAdapter articleAdapter;
+    SwipeRefreshLayout swipeContainer;
 
 
+    String searchQuery;
     String filteredQuery;
     String sortOrder;
     String beginDate;
@@ -61,22 +67,36 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         setContentView(R.layout.activity_search);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+        // Lookup the swipe container view
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(() -> fetchTimelineAsync(0));
 
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
 
+        searchQuery = null;
         filteredQuery = null;
         sortOrder = null;
         beginDate = null;
 
         articles = new ArrayList<>();
-        articleArrayAdapter = new ArticleArrayAdapter(this, articles);
-        gvResults.setAdapter(articleArrayAdapter);
+        articleAdapter = new ArticleAdapter(this, articles);
+        rvArticles.setAdapter(articleAdapter);
+        StaggeredGridLayoutManager gridLayoutManager =
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        rvArticles.setLayoutManager(gridLayoutManager);
 
-        gvResults.setOnItemClickListener((parent, view, position, id) -> {
+
+       articleAdapter.setOnItemClickListener((view, position) -> {
             // create an intent to display the article
             Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
             // get the article to display
             Log.d("SearchActivity", "Coming here");
-            Article article = articleArrayAdapter.getItem(position);
+            Article article = articleAdapter.getItem(position);
             // pass in that article into intent
             intent.putExtra("article", Parcels.wrap(article));
             // launch the activity
@@ -111,11 +131,16 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     }
 
     public void onArticleSearch(View view) {
-        String searchQuery = etQuery.getText().toString();
+        searchQuery = etQuery.getText().toString();
         if (searchQuery.isEmpty()) {
             searchQuery = null;
         }
 
+        fetchTimelineAsync(0);
+
+    }
+
+    private void fetchTimelineAsync(int page) {
 
 
         OkHttpClient client = new OkHttpClient();
@@ -147,7 +172,18 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 Log.d("ServiceActvity", String.valueOf(response.isSuccessful()));
                 ArticleResponse articleResponse = response.body();
 
-                articleArrayAdapter.addAll(articleResponse.getResponse().getArticles());
+                if (swipeContainer.isRefreshing()) {
+                    articleAdapter.clear();
+                }
+                // record current size of the list
+                int curSize = articleAdapter.getItemCount();
+                List<Article> newArticles = articleResponse.getResponse().getArticles();
+                articles.addAll(newArticles);
+                articleAdapter.notifyItemRangeInserted(curSize, newArticles.size());
+
+                if (swipeContainer.isRefreshing()) {
+                    swipeContainer.setRefreshing(false);
+                }
                 Log.d("ServiceAcivity", articles.get(0).getLeadParagraph());
                 //Log.d("ServiceActivity", articles.get(0).getHeadline().getPrintHeadline());
 
@@ -161,9 +197,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             }
 
         });
-
     }
-
     @Override
     public void onFilterSettingsChanged() {
         SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(this);

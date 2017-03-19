@@ -25,12 +25,17 @@
         android:layout_alignParentTop="true"
         android:text="@string/search"
         android:onClick="onArticleSearch"/>
-
-    <GridView
-        android:id="@+id/gvResults"
+    <android.support.v4.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipeContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/btnSearch"
-        android:layout_centerHorizontal="true"
-        android:numColumns="2" />
+        android:layout_below="@+id/btnSearch">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rvArticles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
 </RelativeLayout>
