@@ -58,6 +58,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     SwipeRefreshLayout swipeContainer;
     // Store a member variable for the listener
     private EndlessRecyclerViewScrollListener scrollListener;
+    SharedPreferences mSettings;
+
 
     String searchQuery;
     String filteredQuery;
@@ -87,10 +89,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
 
-        searchQuery = null;
-        filteredQuery = null;
-        sortOrder = null;
-        beginDate = null;
+        mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+        getFilters();
         totalHits = 0;
 
         articles = new ArrayList<>();
@@ -155,9 +155,13 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     }
 
     public void onArticleSearch(View view) {
+        SharedPreferences.Editor editor = mSettings.edit();
         searchQuery = etQuery.getText().toString();
         if (searchQuery.isEmpty()) {
             searchQuery = null;
+            editor.remove(Constants.SEARCH_QUERY_STR);
+        } else {
+            editor.putString(Constants.SEARCH_QUERY_STR, searchQuery);
         }
 
         articleAdapter.clear();
@@ -228,10 +232,15 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     }
     @Override
     public void onFilterSettingsChanged() {
-        SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+        getFilters();
+
+
+    }
+
+    private void getFilters() {
+        searchQuery = mSettings.getString(Constants.SEARCH_QUERY_STR, null);
         filteredQuery = mSettings.getString(Constants.FILTERED_QUERY_STR, null);
         sortOrder = mSettings.getString(Constants.SORT_STR, null);
         beginDate = mSettings.getString(Constants.BEGIN_DATE_STR, null);
-
     }
 }
