@@ -27,7 +27,6 @@
         <item name="android:hint">@string/search_hint</item>
         <item name="android:queryHint">@string/search_hint</item>
         <item name="android:completionHint">@string/search_hint</item>
-
     </style>
     <style name="CustomToolbarThemeOverlay.ActionBar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="searchViewStyle">@style/SearchViewTheme</item>
