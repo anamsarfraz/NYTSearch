@@ -3,6 +3,7 @@ package com.codepath.nytsearch.fragments;
 import android.app.DatePickerDialog;
 
 import android.content.SharedPreferences;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -10,14 +11,12 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codepath.nytsearch.R;
+import com.codepath.nytsearch.databinding.FragmentSettingsBinding;
 import com.codepath.nytsearch.util.Constants;
 import com.codepath.nytsearch.util.DateConverter;
 
@@ -32,22 +31,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-
 public class SettingsFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
     private static DateFormat yyyyMMddFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
     private static DateFormat MMddyyyyFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
-
-
-    @BindView(R.id.btnSave) Button btnSave;
-    @BindView(R.id.tvDate) TextView tvDate;
-    @BindView(R.id.spnSortOrder) Spinner spnSortOrder;
-    @BindView(R.id.cbArts) CheckBox cbArts;
-    @BindView(R.id.cbFashionStyle) CheckBox cbFashionStyle;
-    @BindView(R.id.cbSports) CheckBox cbSports;
+    private FragmentSettingsBinding binding;
 
     Map<CheckBox, String> cbMap;
     Calendar cal;
@@ -62,12 +50,6 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment SettingsFragment.
-     */
     public static SettingsFragment newInstance() {
         return new SettingsFragment();
 
@@ -84,16 +66,17 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View contentView =  inflater.inflate(R.layout.fragment_settings, container, false);
-        ButterKnife.bind(this, contentView);
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings, container, false);
+        View contentView = binding.getRoot();
+
 
         cal = Calendar.getInstance();
         dateSet = false;
 
         cbMap = new HashMap<CheckBox, String>(){{
-            put(cbArts, getString(R.string.arts));
-            put(cbFashionStyle, getString(R.string.fashion_plus_style));
-            put(cbSports, getString(R.string.sports));
+            put(binding.cbArts, getString(R.string.arts));
+            put(binding.cbFashionStyle, getString(R.string.fashion_plus_style));
+            put(binding.cbSports, getString(R.string.sports));
         }};
         mSettings = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String beginDate = getString(R.string.date_placeholder);
@@ -111,13 +94,13 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
             Toast.makeText(getContext(), "Unable to set begin date filter", Toast.LENGTH_SHORT).show();
         }
 
-        tvDate.setText(beginDate);
+        binding.tvDate.setText(beginDate);
 
         String sortOrder = mSettings.getString(Constants.SORT_STR, Constants.DEFAULT_SORT_ORDER);
         String [] orderArray = getResources().getStringArray(R.array.order_array);
         for (int position = 0; position < orderArray.length; position++) {
             if (orderArray[position].toLowerCase().equals(sortOrder)) {
-                spnSortOrder.setSelection(position);
+                binding.spnSortOrder.setSelection(position);
                 break;
             }
         }
@@ -134,7 +117,7 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
 
 
-        btnSave.setOnClickListener(v -> {
+        binding.btnSave.setOnClickListener(v -> {
             saveFilters();
             OnFilterSettingsChangedListener listener = (OnFilterSettingsChangedListener) getActivity();
             listener.onFilterSettingsChanged();
@@ -142,7 +125,7 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
         });
 
-        tvDate.setOnClickListener(v -> {
+        binding.tvDate.setOnClickListener(v -> {
             FragmentManager fm = getFragmentManager();
             DatePickerFragment datePickerFragment = DatePickerFragment.newInstance();
             // SETS the target fragment for use later when sending results
@@ -162,10 +145,12 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
             editor.putString(Constants.BEGIN_DATE_STR, yyyyMMddFormat.format(cal.getTime()));
         }
 
-        if (spnSortOrder.getSelectedItemPosition() == 0) {
+        if (binding.spnSortOrder.getSelectedItemPosition() == 0) {
             editor.remove(Constants.SORT_STR);
         } else {
-            editor.putString(Constants.SORT_STR, spnSortOrder.getSelectedItem().toString().toLowerCase());
+            editor.putString(
+                    Constants.SORT_STR,
+                    binding.spnSortOrder.getSelectedItem().toString().toLowerCase());
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -196,7 +181,7 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
         cal.set(Calendar.MONTH, month);
         cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-        tvDate.setText(MMddyyyyFormat.format(cal.getTime()));
+        binding.tvDate.setText(MMddyyyyFormat.format(cal.getTime()));
         dateSet = true;
 
 

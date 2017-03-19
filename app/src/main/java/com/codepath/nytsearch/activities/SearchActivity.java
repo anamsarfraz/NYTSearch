@@ -2,26 +2,23 @@ package com.codepath.nytsearch.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.databinding.DataBindingUtil;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.os.Handler;
 import android.widget.Toast;
 
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.adapters.ArticleAdapter;
+import com.codepath.nytsearch.databinding.ActivitySearchBinding;
 import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
@@ -39,8 +36,6 @@ import org.parceler.Parcels;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,18 +45,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class SearchActivity extends AppCompatActivity implements SettingsFragment.OnFilterSettingsChangedListener {
-    @BindView(R.id.etQuery)EditText etQuery;
-    @BindView(R.id.btnSearch)Button btnSeach;
-    @BindView(R.id.rvArticles)RecyclerView rvArticles;
-    @BindView(R.id.toolbar) Toolbar toolbar;
 
+    private ActivitySearchBinding binding;
     ArrayList<Article> articles;
     ArticleAdapter articleAdapter;
-    SwipeRefreshLayout swipeContainer;
-    // Store a member variable for the listener
     private EndlessRecyclerViewScrollListener scrollListener;
     SharedPreferences mSettings;
-
 
     String searchQuery;
     String filteredQuery;
@@ -73,16 +62,14 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search);
-        ButterKnife.bind(this);
-        setSupportActionBar(toolbar);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
+        setSupportActionBar(binding.tbSearch);
         // Lookup the swipe container view
-        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(this::beginNewSearch);
+        binding.swipeContainer.setOnRefreshListener(this::beginNewSearch);
 
         // Configure the refreshing colors
-        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+        binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
@@ -93,10 +80,10 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
         articles = new ArrayList<>();
         articleAdapter = new ArticleAdapter(this, articles);
-        rvArticles.setAdapter(articleAdapter);
+        binding.rvArticles.setAdapter(articleAdapter);
         StaggeredGridLayoutManager gridLayoutManager =
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
-        rvArticles.setLayoutManager(gridLayoutManager);
+        binding.rvArticles.setLayoutManager(gridLayoutManager);
 
 
        articleAdapter.setOnItemClickListener((view, position) -> {
@@ -126,7 +113,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             }
         };
         // Adds the scroll listener to RecyclerView
-        rvArticles.addOnScrollListener(scrollListener);
+        binding.rvArticles.addOnScrollListener(scrollListener);
     }
 
     @Override
@@ -157,7 +144,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
     public void onArticleSearch(View view) {
         SharedPreferences.Editor editor = mSettings.edit();
-        searchQuery = etQuery.getText().toString();
+        searchQuery = binding.etQuery.getText().toString();
         if (searchQuery.isEmpty()) {
             searchQuery = null;
             editor.remove(Constants.SEARCH_QUERY_STR);
@@ -224,7 +211,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 handler.removeCallbacks(runnableCode);
                 Articles articleResponse = response.body().getResponse();
 
-                if (swipeContainer.isRefreshing()) {
+                if (binding.swipeContainer.isRefreshing()) {
                     articleAdapter.clear();
                 }
                 // record current size of the list
@@ -234,9 +221,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 articles.addAll(newArticles);
                 articleAdapter.notifyItemRangeInserted(curSize, newArticles.size());
 
-                if (swipeContainer.isRefreshing()) {
-                    swipeContainer.setRefreshing(false);
-                }
+                hideRefreshControl();
                 Log.d("ServiceAcivity", articles.get(0).getLeadParagraph());
                 //Log.d("ServiceActivity", articles.get(0).getHeadline().getPrintHeadline());
 
@@ -244,9 +229,6 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
             @Override
             public void onFailure(Call<ArticleResponse> call, Throwable t) {
-                if (swipeContainer.isRefreshing()) {
-                    swipeContainer.setRefreshing(false);
-                }
                 beginNewSearch();
 
 
@@ -277,16 +259,19 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     private void beginNewSearch() {
         articleAdapter.clear();
         scrollListener.resetState();
+        hideRefreshControl();
         if (Connectivity.isConnected(this)) {
             fetchArticlesAsync(0);
         } else {
-            if (swipeContainer.isRefreshing()) {
-                swipeContainer.setRefreshing(false);
-            }
             Toast.makeText(this, "Unable to access internet. Network Error?", Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void hideRefreshControl() {
+        if (binding.swipeContainer.isRefreshing()) {
+            binding.swipeContainer.setRefreshing(false);
+        }
+    }
 
 
 }
