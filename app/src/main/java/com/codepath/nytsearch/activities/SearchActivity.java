@@ -24,6 +24,7 @@ import com.codepath.nytsearch.adapters.ArticleAdapter;
 import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
+import com.codepath.nytsearch.models.Articles;
 import com.codepath.nytsearch.util.Constants;
 import com.codepath.nytsearch.util.EndlessRecyclerViewScrollListener;
 import com.codepath.nytsearch.util.NYTSearchService;
@@ -63,6 +64,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     String sortOrder;
     String beginDate;
 
+    int totalHits;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,7 +75,11 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         // Lookup the swipe container view
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(() -> fetchArticlesAsync(0));
+        swipeContainer.setOnRefreshListener(() -> {
+            articleAdapter.clear();
+            scrollListener.resetState();
+            fetchArticlesAsync(0);
+        });
 
         // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -84,6 +91,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         filteredQuery = null;
         sortOrder = null;
         beginDate = null;
+        totalHits = 0;
 
         articles = new ArrayList<>();
         articleAdapter = new ArticleAdapter(this, articles);
@@ -109,7 +117,11 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                fetchArticlesAsync(page);
+                if (totalHits > totalItemsCount) {
+                    Log.d("SearchActivity", String.format("Total hits: %d, total Item Count: %d", totalHits, totalItemsCount));
+                    fetchArticlesAsync(page);
+                }
+
             }
         };
         // Adds the scroll listener to RecyclerView
@@ -148,6 +160,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             searchQuery = null;
         }
 
+        articleAdapter.clear();
+        scrollListener.resetState();
         fetchArticlesAsync(0);
 
     }
@@ -170,7 +184,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         NYTSearchService service = retrofit.create(NYTSearchService.class);
 
 
-        Log.d("Search Activity", "Checkpoint");
+        Log.d("Search Activity", String.format("Checkpoint. Page number: %d", page));
         Call<ArticleResponse> call = service.getArticles(
                 "7207142e827449f7af7b4525fd35c111",
                 searchQuery,
@@ -183,14 +197,15 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             @Override
             public void onResponse(Call<ArticleResponse> call, Response<ArticleResponse> response) {
                 Log.d("ServiceActvity", String.valueOf(response.isSuccessful()));
-                ArticleResponse articleResponse = response.body();
+                Articles articleResponse = response.body().getResponse();
 
                 if (swipeContainer.isRefreshing()) {
                     articleAdapter.clear();
                 }
                 // record current size of the list
                 int curSize = articleAdapter.getItemCount();
-                List<Article> newArticles = articleResponse.getResponse().getArticles();
+                List<Article> newArticles = articleResponse.getArticles();
+                totalHits = articleResponse.getMeta().getHits();
                 articles.addAll(newArticles);
                 articleAdapter.notifyItemRangeInserted(curSize, newArticles.size());
 
