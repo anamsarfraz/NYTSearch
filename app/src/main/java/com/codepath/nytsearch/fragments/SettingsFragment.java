@@ -28,20 +28,18 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static android.R.id.list;
-
 
 public class SettingsFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
-    static DateFormat yyyyMMddFormat = new SimpleDateFormat("yyyyMMdd");
-    static DateFormat MMddyyyyFormat = new SimpleDateFormat("MM/dd/yyyy");
+    private static DateFormat yyyyMMddFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+    private static DateFormat MMddyyyyFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
 
 
     @BindView(R.id.btnSave) Button btnSave;
@@ -57,7 +55,6 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
 
 
-    private OnFilterSettingsChangedListener mListener;
     SharedPreferences mSettings;
 
 
@@ -94,9 +91,9 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
         dateSet = false;
 
         cbMap = new HashMap<CheckBox, String>(){{
-            put(cbArts, "Arts");
-            put(cbFashionStyle, "Fashion + Style");
-            put(cbSports, "Sports");
+            put(cbArts, getString(R.string.arts));
+            put(cbFashionStyle, getString(R.string.fashion_plus_style));
+            put(cbSports, getString(R.string.sports));
         }};
         mSettings = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String beginDate = getString(R.string.date_placeholder);
@@ -127,7 +124,7 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
         String filteredQuery = mSettings.getString(Constants.FILTERED_QUERY_STR, null);
         if (filteredQuery != null) {
-            Set<String> filteredSet = new HashSet<String>(Arrays.asList(filteredQuery.split("\"")));
+            Set<String> filteredSet = new HashSet<>(Arrays.asList(filteredQuery.split("\"")));
             for (Map.Entry<CheckBox, String> cbEntry: cbMap.entrySet()) {
                 cbEntry.getKey().setChecked(filteredSet.contains(cbEntry.getValue()));
             }
@@ -137,30 +134,21 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
 
 
-        btnSave.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                saveFilters();
-                OnFilterSettingsChangedListener listener = (OnFilterSettingsChangedListener) getActivity();
-                listener.onFilterSettingsChanged();
-                dismiss();
+        btnSave.setOnClickListener(v -> {
+            saveFilters();
+            OnFilterSettingsChangedListener listener = (OnFilterSettingsChangedListener) getActivity();
+            listener.onFilterSettingsChanged();
+            dismiss();
 
-            }
         });
 
-        tvDate.setOnClickListener(new View.OnClickListener() {
+        tvDate.setOnClickListener(v -> {
+            FragmentManager fm = getFragmentManager();
+            DatePickerFragment datePickerFragment = DatePickerFragment.newInstance();
+            // SETS the target fragment for use later when sending results
+            datePickerFragment.setTargetFragment(SettingsFragment.this, 300);
+            datePickerFragment.show(fm, "fragment_date_picker");
 
-            @Override
-            public void onClick(View v) {
-                FragmentManager fm = getFragmentManager();
-                DatePickerFragment datePickerFragment = DatePickerFragment.newInstance();
-                // SETS the target fragment for use later when sending results
-                datePickerFragment.setTargetFragment(SettingsFragment.this, 300);
-                datePickerFragment.show(fm, "fragment_date_picker");
-
-            }
         });
 
 
@@ -198,7 +186,6 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
             editor.remove(Constants.FILTERED_QUERY_STR);
         }
 
-        editor.commit();
         editor.apply();
     }
 

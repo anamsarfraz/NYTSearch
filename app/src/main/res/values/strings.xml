@@ -24,4 +24,5 @@
     <string name="settings_dialog_title">Search Filters</string>
     <string name="date_placeholder">01/01/1970</string>
     <string name="date_placeholder_YYYYMMDD">19700101</string>
+    <string name="fashion_plus_style">Fashion + Style</string>
 </resources>

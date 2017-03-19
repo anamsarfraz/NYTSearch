@@ -2,16 +2,12 @@ package com.codepath.nytsearch.activities;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
 
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.models.Article;
@@ -35,7 +31,7 @@ public class ArticleActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
-        article = (Article) Parcels.unwrap(getIntent().getParcelableExtra("article"));
+        article = Parcels.unwrap(getIntent().getParcelableExtra("article"));
 
         Log.d("ArticleActivity", article.getWebUrl());
 

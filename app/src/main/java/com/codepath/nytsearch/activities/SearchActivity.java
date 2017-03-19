@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
@@ -72,20 +71,16 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         articleArrayAdapter = new ArticleArrayAdapter(this, articles);
         gvResults.setAdapter(articleArrayAdapter);
 
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // create an intent to display the article
-                Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
-                // get the article to display
-                Log.d("SearchActivity", "Coming here");
-                Article article = articleArrayAdapter.getItem(position);
-                // pass in that article into intent
-                intent.putExtra("article", Parcels.wrap(article));
-                // launch the activity
-                startActivity(intent);
-            }
+        gvResults.setOnItemClickListener((parent, view, position, id) -> {
+            // create an intent to display the article
+            Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
+            // get the article to display
+            Log.d("SearchActivity", "Coming here");
+            Article article = articleArrayAdapter.getItem(position);
+            // pass in that article into intent
+            intent.putExtra("article", Parcels.wrap(article));
+            // launch the activity
+            startActivity(intent);
         });
     }
 
@@ -124,15 +119,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
 
         OkHttpClient client = new OkHttpClient();
-        /*client.interceptors().add(new Interceptor() {
-            @Override
-            public Docs intercept(Chain chain) throws IOException {
-                HttpUrl httpUrl = chain.request().url().newBuilder().addQueryParameter("", "").build();
 
-                chain.request().newBuilder().url(httpUrl);
-                return chain.proceed(chain.request());
-            }
-        })*/
 
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
