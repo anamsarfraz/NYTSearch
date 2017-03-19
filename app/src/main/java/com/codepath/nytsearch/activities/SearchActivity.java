@@ -17,7 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridView;
+import android.os.Handler;
+import android.widget.Toast;
 
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.adapters.ArticleAdapter;
@@ -25,6 +26,7 @@ import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
 import com.codepath.nytsearch.models.Articles;
+import com.codepath.nytsearch.util.Connectivity;
 import com.codepath.nytsearch.util.Constants;
 import com.codepath.nytsearch.util.EndlessRecyclerViewScrollListener;
 import com.codepath.nytsearch.util.NYTSearchService;
@@ -77,11 +79,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         // Lookup the swipe container view
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(() -> {
-            articleAdapter.clear();
-            scrollListener.resetState();
-            fetchArticlesAsync(0);
-        });
+        swipeContainer.setOnRefreshListener(this::beginNewSearch);
 
         // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -91,7 +89,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
         mSettings = PreferenceManager.getDefaultSharedPreferences(this);
         getFilters();
-        totalHits = 0;
+        totalHits = -1;
 
         articles = new ArrayList<>();
         articleAdapter = new ArticleAdapter(this, articles);
@@ -117,9 +115,12 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                if (totalHits > totalItemsCount) {
+                // NewYork Times API has a page limit of 120
+                if (totalHits > totalItemsCount && page <= 120) {
                     Log.d("SearchActivity", String.format("Total hits: %d, total Item Count: %d", totalHits, totalItemsCount));
                     fetchArticlesAsync(page);
+                } else {
+                    Log.d("SearchActivity", String.format("Cant load more. Total hits: %d, total Item Count: %d", totalHits, totalItemsCount));
                 }
 
             }
@@ -164,9 +165,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             editor.putString(Constants.SEARCH_QUERY_STR, searchQuery);
         }
 
-        articleAdapter.clear();
-        scrollListener.resetState();
-        fetchArticlesAsync(0);
+        beginNewSearch();
 
     }
 
@@ -188,6 +187,16 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         NYTSearchService service = retrofit.create(NYTSearchService.class);
 
 
+        // Create the Handler object (on the main thread by default)
+        Handler handler = new Handler();
+        // Define the code block to be executed
+
+        final Runnable runnableCode = new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Search Activity", "Retrying Network Request");
+            }
+        };
         Log.d("Search Activity", String.format("Checkpoint. Page number: %d", page));
         Call<ArticleResponse> call = service.getArticles(
                 "7207142e827449f7af7b4525fd35c111",
@@ -196,11 +205,23 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 sortOrder,
                 beginDate,
                 page);
-        call.enqueue(new Callback<ArticleResponse>() {
+        Callback callback = new Callback<ArticleResponse>() {
 
             @Override
             public void onResponse(Call<ArticleResponse> call, Response<ArticleResponse> response) {
-                Log.d("ServiceActvity", String.valueOf(response.isSuccessful()));
+
+                if (!response.isSuccessful()) {
+                    if (response.code() == 429) {
+                        Log.d("Search Activity", "Retrying Network Request");
+                        handler.postDelayed(runnableCode, 3000);
+                        call.clone().enqueue(this);
+
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Unable to get articles. Check connection and try again.", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+                handler.removeCallbacks(runnableCode);
                 Articles articleResponse = response.body().getResponse();
 
                 if (swipeContainer.isRefreshing()) {
@@ -223,12 +244,21 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
             @Override
             public void onFailure(Call<ArticleResponse> call, Throwable t) {
-                Log.d("ServiceActivity", "Something went wrong"+t.getLocalizedMessage());
+                if (swipeContainer.isRefreshing()) {
+                    swipeContainer.setRefreshing(false);
+                }
+                beginNewSearch();
+
 
 
             }
 
-        });
+        };
+
+        call.enqueue(callback);
+
+
+
     }
     @Override
     public void onFilterSettingsChanged() {
@@ -243,4 +273,20 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         sortOrder = mSettings.getString(Constants.SORT_STR, null);
         beginDate = mSettings.getString(Constants.BEGIN_DATE_STR, null);
     }
+
+    private void beginNewSearch() {
+        articleAdapter.clear();
+        scrollListener.resetState();
+        if (Connectivity.isConnected(this)) {
+            fetchArticlesAsync(0);
+        } else {
+            if (swipeContainer.isRefreshing()) {
+                swipeContainer.setRefreshing(false);
+            }
+            Toast.makeText(this, "Unable to access internet. Network Error?", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
 }
