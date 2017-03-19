@@ -13,36 +13,20 @@
             xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/tbSearch"
+            android:theme="@style/MyThemeOverlay.ActionBar"
             android:minHeight="?attr/actionBarSize"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_blue_dark">
         </android.support.v7.widget.Toolbar>
 
-
-        <EditText
-            android:id="@+id/etQuery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/tbSearch"
-            android:layout_toStartOf="@+id/btnSearch"
-            android:hint="@string/hint" />
-
-        <Button
-            android:id="@+id/btnSearch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="@string/search"
-            android:layout_below="@+id/tbSearch"
-            android:onClick="onArticleSearch"/>
         <android.support.v4.widget.SwipeRefreshLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/swipeContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_below="@+id/btnSearch">
+            android:layout_below="@+id/tbSearch">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rvArticles"

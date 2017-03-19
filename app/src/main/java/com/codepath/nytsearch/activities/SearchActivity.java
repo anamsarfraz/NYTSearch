@@ -5,14 +5,15 @@ import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.os.Handler;
 import android.widget.Toast;
 
@@ -42,6 +43,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.codepath.nytsearch.R.string.search;
 
 
 public class SearchActivity extends AppCompatActivity implements SettingsFragment.OnFilterSettingsChangedListener {
@@ -120,6 +123,33 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_search, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setQueryHint(getString(R.string.search_hint));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                SharedPreferences.Editor editor = mSettings.edit();
+                if (query.isEmpty()) {
+                    searchQuery = null;
+                    editor.remove(Constants.SEARCH_QUERY_STR);
+                } else {
+                    searchQuery = query;
+                    editor.putString(Constants.SEARCH_QUERY_STR, searchQuery);
+                }
+
+                beginNewSearch();
+
+                searchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
         return true;
     }
 
@@ -142,19 +172,6 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         return super.onOptionsItemSelected(item);
     }
 
-    public void onArticleSearch(View view) {
-        SharedPreferences.Editor editor = mSettings.edit();
-        searchQuery = binding.etQuery.getText().toString();
-        if (searchQuery.isEmpty()) {
-            searchQuery = null;
-            editor.remove(Constants.SEARCH_QUERY_STR);
-        } else {
-            editor.putString(Constants.SEARCH_QUERY_STR, searchQuery);
-        }
-
-        beginNewSearch();
-
-    }
 
     private void fetchArticlesAsync(int page) {
 
