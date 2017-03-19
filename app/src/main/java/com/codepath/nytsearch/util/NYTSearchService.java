@@ -17,6 +17,7 @@ public interface NYTSearchService {
             @Query(Constants.SEARCH_QUERY_STR) String searchQuery,
             @Query(Constants.FILTERED_QUERY_STR) String filteredQuery,
             @Query(Constants.SORT_STR) String sortOrder,
-            @Query(Constants.BEGIN_DATE_STR) String beginDate
+            @Query(Constants.BEGIN_DATE_STR) String beginDate,
+            @Query(Constants.PAGE_STR) Integer page
             );
 }

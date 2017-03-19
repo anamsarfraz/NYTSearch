@@ -11,4 +11,5 @@ public class Constants {
     public final static String BEGIN_DATE_STR = "begin_date";
     public static final String API_KEY_STR = "api-key";
     public static final String DEFAULT_SORT_ORDER = "default";
+    public static final String PAGE_STR = "page";
 }

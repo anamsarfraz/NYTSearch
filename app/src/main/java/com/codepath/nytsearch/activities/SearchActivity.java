@@ -25,6 +25,7 @@ import com.codepath.nytsearch.fragments.SettingsFragment;
 import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleResponse;
 import com.codepath.nytsearch.util.Constants;
+import com.codepath.nytsearch.util.EndlessRecyclerViewScrollListener;
 import com.codepath.nytsearch.util.NYTSearchService;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -54,7 +55,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
     ArrayList<Article> articles;
     ArticleAdapter articleAdapter;
     SwipeRefreshLayout swipeContainer;
-
+    // Store a member variable for the listener
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     String searchQuery;
     String filteredQuery;
@@ -70,7 +72,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         // Lookup the swipe container view
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
-        swipeContainer.setOnRefreshListener(() -> fetchTimelineAsync(0));
+        swipeContainer.setOnRefreshListener(() -> fetchArticlesAsync(0));
 
         // Configure the refreshing colors
         swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -102,6 +104,16 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             // launch the activity
             startActivity(intent);
         });
+
+        // Retain an instance so that you can call `resetState()` for fresh searches
+        scrollListener = new EndlessRecyclerViewScrollListener(gridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                fetchArticlesAsync(page);
+            }
+        };
+        // Adds the scroll listener to RecyclerView
+        rvArticles.addOnScrollListener(scrollListener);
     }
 
     @Override
@@ -136,11 +148,11 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
             searchQuery = null;
         }
 
-        fetchTimelineAsync(0);
+        fetchArticlesAsync(0);
 
     }
 
-    private void fetchTimelineAsync(int page) {
+    private void fetchArticlesAsync(int page) {
 
 
         OkHttpClient client = new OkHttpClient();
@@ -164,7 +176,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                 searchQuery,
                 filteredQuery,
                 sortOrder,
-                beginDate);
+                beginDate,
+                page);
         call.enqueue(new Callback<ArticleResponse>() {
 
             @Override
