@@ -1,4 +1,6 @@
 <resources>
     <dimen name="margin_top">16dp</dimen>
     <dimen name="margin_start">48dp</dimen>
+    <dimen name="padding4">4dp</dimen>
+    <dimen name="margin8">8dp</dimen>
 </resources>

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.os.Handler;
+import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
 
 import com.codepath.nytsearch.R;
@@ -43,6 +44,10 @@ import org.parceler.Parcels;
 import java.util.ArrayList;
 import java.util.List;
 
+import jp.wasabeef.recyclerview.adapters.AlphaInAnimationAdapter;
+import jp.wasabeef.recyclerview.animators.FadeInAnimator;
+import jp.wasabeef.recyclerview.animators.LandingAnimator;
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -89,11 +94,19 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
 
         articles = new ArrayList<>();
         articleAdapter = new ArticleAdapter(this, articles);
-        binding.rvArticles.setAdapter(articleAdapter);
+        //binding.rvArticles.setAdapter(articleAdapter);
         StaggeredGridLayoutManager gridLayoutManager =
                 new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         binding.rvArticles.setLayoutManager(gridLayoutManager);
+        binding.rvArticles.setItemAnimator(new LandingAnimator());
+        binding.rvArticles.getItemAnimator().setAddDuration(500);
+        binding.rvArticles.getItemAnimator().setRemoveDuration(500);
+        binding.rvArticles.getItemAnimator().setMoveDuration(500);
+        binding.rvArticles.getItemAnimator().setChangeDuration(500);
 
+        AlphaInAnimationAdapter alphaAdapter = new AlphaInAnimationAdapter(articleAdapter);
+        alphaAdapter.setFirstOnly(false);
+        binding.rvArticles.setAdapter(alphaAdapter);
 
        articleAdapter.setOnItemClickListener((view, position) -> {
            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
@@ -256,11 +269,10 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
                     articleAdapter.clear();
                 }
                 // record current size of the list
-                int curSize = articleAdapter.getItemCount();
                 List<Article> newArticles = articleResponse.getArticles();
                 totalHits = articleResponse.getMeta().getHits();
-                articles.addAll(newArticles);
-                articleAdapter.notifyItemRangeInserted(curSize, newArticles.size());
+                articleAdapter.addAll(newArticles);
+
 
                 hideRefreshControl();
                 Log.d("ServiceAcivity", articles.get(0).getLeadParagraph());

@@ -12,6 +12,8 @@ public class Article {
     String snippet;
     String leadParagraph;
     String newsDesk;
+
+    String documentType;
     Headline headline;
     List<ArticleImage> multimedia;
 
@@ -33,6 +35,11 @@ public class Article {
 
     public Headline getHeadline() {
         return headline;
+    }
+
+
+    public String getDocumentType() {
+        return documentType;
     }
 
     public Article() {
