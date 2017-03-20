@@ -17,11 +17,12 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.os.Handler;
-import android.view.animation.OvershootInterpolator;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codepath.nytsearch.R;
@@ -33,29 +34,25 @@ import com.codepath.nytsearch.models.ArticleResponse;
 import com.codepath.nytsearch.models.Articles;
 import com.codepath.nytsearch.util.Connectivity;
 import com.codepath.nytsearch.util.Constants;
+import com.codepath.nytsearch.util.CustomFonts;
 import com.codepath.nytsearch.util.EndlessRecyclerViewScrollListener;
 import com.codepath.nytsearch.util.NYTSearchService;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jp.wasabeef.recyclerview.adapters.AlphaInAnimationAdapter;
-import jp.wasabeef.recyclerview.animators.FadeInAnimator;
 import jp.wasabeef.recyclerview.animators.LandingAnimator;
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-
-import static com.codepath.nytsearch.R.string.search;
 
 
 public class SearchActivity extends AppCompatActivity implements SettingsFragment.OnFilterSettingsChangedListener {
@@ -81,6 +78,8 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         // Lookup the swipe container view
         // Setup refresh listener which triggers new data loading
         binding.swipeContainer.setOnRefreshListener(this::beginNewSearch);
+
+        setFont();
 
         // Configure the refreshing colors
         binding.swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
@@ -156,6 +155,15 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         };
         // Adds the scroll listener to RecyclerView
         binding.rvArticles.addOnScrollListener(scrollListener);
+    }
+
+    private void setFont() {
+        // Customize title
+        TextView toolbarTitle = (TextView) binding.tbSearch.findViewById(R.id.tvTbTitle);
+
+        setTitle("");
+        toolbarTitle.setText(getString(R.string.title_activity_search));
+        toolbarTitle.setTypeface(CustomFonts.getTypeFace(this, Constants.CHELTENHAM_FONT));
     }
 
     @Override
@@ -242,7 +250,7 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
         };
         Log.d("Search Activity", String.format("Checkpoint. Page number: %d", page));
         Call<ArticleResponse> call = service.getArticles(
-                "7207142e827449f7af7b4525fd35c111",
+                getString(R.string.nytsearch_api_key),
                 searchQuery,
                 filteredQuery,
                 sortOrder,

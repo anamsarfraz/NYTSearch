@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.DialogFragment;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.codepath.nytsearch.R;
 import com.codepath.nytsearch.databinding.FragmentSettingsBinding;
 import com.codepath.nytsearch.util.Constants;
+import com.codepath.nytsearch.util.CustomFonts;
 import com.codepath.nytsearch.util.DateConverter;
 
 import java.text.DateFormat;
@@ -69,9 +71,13 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings, container, false);
         View contentView = binding.getRoot();
 
-
         cal = Calendar.getInstance();
         dateSet = false;
+
+        setFonts();
+
+        binding.tvSettingsTitle.setTypeface(
+                CustomFonts.getTypeFace(getContext(), Constants.CHELTENHAM_FONT));
 
         cbMap = new HashMap<CheckBox, String>(){{
             put(binding.cbArts, getString(R.string.arts));
@@ -125,6 +131,11 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
         });
 
+        binding.btnCancel.setOnClickListener(v -> {
+            dismiss();
+
+        });
+
         binding.tvDate.setOnClickListener(v -> {
             FragmentManager fm = getFragmentManager();
             DatePickerFragment datePickerFragment = DatePickerFragment.newInstance();
@@ -137,6 +148,14 @@ public class SettingsFragment extends DialogFragment implements DatePickerDialog
 
         return contentView;
     }
+
+    private void setFonts() {
+        CustomFonts.setDefaultFont(getContext(), "DEFAULT", Constants.FRANKLIN_GOTHIC_FONT);
+        CustomFonts.setDefaultFont(getContext(), "MONOSPACE", Constants.FRANKLIN_GOTHIC_FONT);
+        CustomFonts.setDefaultFont(getContext(), "SERIF", Constants.FRANKLIN_GOTHIC_FONT);
+        CustomFonts.setDefaultFont(getContext(), "SANS_SERIF", Constants.FRANKLIN_GOTHIC_FONT);
+    }
+
 
     private void saveFilters() {
         SharedPreferences.Editor editor = mSettings.edit();

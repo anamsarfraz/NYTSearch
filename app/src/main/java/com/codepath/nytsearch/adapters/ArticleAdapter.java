@@ -1,6 +1,7 @@
 package com.codepath.nytsearch.adapters;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +17,8 @@ import com.codepath.nytsearch.models.Article;
 import com.codepath.nytsearch.models.ArticleImage;
 import com.codepath.nytsearch.models.Headline;
 import com.codepath.nytsearch.util.ColorGenerator;
+import com.codepath.nytsearch.util.Constants;
+import com.codepath.nytsearch.util.CustomFonts;
 
 
 import java.util.List;
@@ -129,6 +132,8 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        Typeface custom_c_font = CustomFonts.getTypeFace(mContext, Constants.CHELTENHAM_FONT);
+
         // Get the data model based on position
         Article article = mArticles.get(position);
 
@@ -156,6 +161,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
                 viewFull.tvTitle.setText(headline);
+                viewFull.tvTitle.setTypeface(custom_c_font);
                 viewFull.tvNewsDesk.setText(newsDesk);
                 viewFull.tvNewsDesk.setBackgroundColor(ColorGenerator.getColor(newsDesk));
                 viewFull.tvSnippet.setText(article.getSnippet());
@@ -181,6 +187,7 @@ public class ArticleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             default:
                 ViewHolderPartial viewPartial = (ViewHolderPartial) holder;
                 viewPartial.tvpTitle.setText(headline);
+                viewPartial.tvpTitle.setTypeface(custom_c_font);
                 viewPartial.tvpNewsDesk.setText(newsDesk);
                 viewPartial.tvpNewsDesk.setBackgroundColor(ColorGenerator.getColor(newsDesk));
                 viewPartial.tvpSnippet.setText(article.getSnippet());

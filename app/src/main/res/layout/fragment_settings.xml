@@ -9,6 +9,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:layout_marginTop="@dimen/margin_top"
             android:text="@string/settings_dialog_title"
             android:textAppearance="?android:attr/textAppearanceLarge"/>
         <TextView
@@ -80,14 +81,28 @@
             android:layout_alignStart="@id/cbArts"
             tools:targetApi="lollipop" />
         <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/cbSports"
+            android:background="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"
+            android:text="@string/cancel"
+            android:layout_alignBaseline="@+id/btnSave"
+            android:layout_alignBottom="@+id/btnSave"
+            android:layout_alignStart="@+id/cbSports" />
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_top"
             android:background="@android:color/holo_blue_light"
             android:textColor="@android:color/white"
             android:text="@string/save"
-            />
+
+            android:layout_marginStart="@dimen/margin8"
+            android:layout_below="@+id/cbSports"
+            android:layout_toEndOf="@+id/btnCancel"
+            android:layout_marginBottom="@dimen/margin8"/>
+
     </RelativeLayout>
 </layout>

@@ -4,7 +4,8 @@
     <string name="search">Search</string>
     <string name="action_settings">Settings</string>
     <string name="default_text">Text View</string>
-    <string name="title_activity_article">ArticleActivity</string>
+    <string name="title_activity_search">NewYork Times Article Search</string>
+
     <string name="action_filter">Filter</string>
     <string name="sort_order">Sort Order</string>
 
@@ -13,8 +14,6 @@
         <item>Oldest</item>
         <item>Newest</item>
     </string-array>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="sports">Sports</string>
     <string name="arts">Arts</string>
     <string name="fashion_style"><![CDATA[Fashion & Style]]></string>
@@ -26,4 +25,6 @@
     <string name="date_placeholder_YYYYMMDD">19700101</string>
     <string name="fashion_plus_style">Fashion + Style</string>
     <string name="search_hint">Enter Search Query…</string>
+    <string name="cancel">Cancel</string>
+    <string name="nytsearch_api_key">7207142e827449f7af7b4525fd35c111</string>
 </resources>
