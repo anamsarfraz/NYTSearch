@@ -48,6 +48,8 @@ Here's a walkthrough of implemented user stories:
 
 <img src='https://www.dropbox.com/s/pjhuhy19cdxhgvd/WhatsApp%20Video%202017-03-19%20at%209.50.48%20PM.mp4?dl=0' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
+Here's the link to the video:
+https://www.dropbox.com/s/pjhuhy19cdxhgvd/WhatsApp%20Video%202017-03-19%20at%209.50.48%20PM.mp4?dl=0
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
