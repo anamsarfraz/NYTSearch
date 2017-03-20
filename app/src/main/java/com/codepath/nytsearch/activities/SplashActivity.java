@@ -27,7 +27,7 @@ public class SplashActivity extends AppCompatActivity {
         tvAppTitle.clearAnimation();
         tvAppTitle.startAnimation(a);
 
-        int secondsDelayed = 6;
+        int secondsDelayed = 5;
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 startActivity(new Intent(SplashActivity.this, SearchActivity.class));
