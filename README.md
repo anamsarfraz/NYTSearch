@@ -1,8 +1,8 @@
-# Project 2 - *Name of App Here*
+# Project 2 - *NYTSearch*
 
-**Name of your app** is an android app that allows a user to search for articles on web using simple filters. The app utilizes [New York Times Search API](http://developer.nytimes.com/docs/read/article_search_api_v2).
+**NYTSearch** is an android app that allows a user to search for articles on web using simple filters. The app utilizes [New York Times Search API](http://developer.nytimes.com/docs/read/article_search_api_v2).
 
-Time spent: **X** hours spent in total
+Time spent: **30** hours spent in total
 
 ## User Stories
 
@@ -50,7 +50,6 @@ Here's a walkthrough of implemented user stories:
 
 Here's the link to the video:
 https://www.dropbox.com/s/pjhuhy19cdxhgvd/WhatsApp%20Video%202017-03-19%20at%209.50.48%20PM.mp4?dl=0
-GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 ## Notes
 
