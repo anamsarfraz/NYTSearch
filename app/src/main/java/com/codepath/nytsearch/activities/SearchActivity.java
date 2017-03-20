@@ -131,10 +131,12 @@ public class SearchActivity extends AppCompatActivity implements SettingsFragmen
            // Set tint to be true so it matches the toolbar color
            builder.setActionButton(bitmap, "Share Link", pendingIntent, true);
 
+
+           builder.setStartAnimations(this, R.anim.slide_in_right, R.anim.slide_out_left);
+           builder.setExitAnimations(this, R.anim.slide_in_left, R.anim.slide_out_right);
+
            CustomTabsIntent customTabsIntent = builder.build();
-
            customTabsIntent.launchUrl(this, Uri.parse(url));
-
 
        });
 
